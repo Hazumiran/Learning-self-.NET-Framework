@@ -1,0 +1,49 @@
+﻿@{
+    ViewBag.Title = "Edit Data";
+}
+
+<form id="dataForm">
+    <div>
+        <label for="ID">ID:</label>
+        <input type="text" id="ID" name="ID" readonly value="@ViewBag.ID" />
+    </div>
+
+    <div>
+        <label for="NAME">Name:</label>
+        <input type="text" id="NAME" name="NAME" value="@ViewBag.NAME" />
+    </div>
+
+    <div>
+        <label for="DESCRIPTION">Deskripsi:</label>
+        <input id="DESCRIPTION" name="DESCRIPTION" value="@ViewBag.DESCRIPTION"></input>
+    </div>
+
+    <button type="submit">Submit</button>
+</form>
+
+<input type="button" onclick="location.href='/Testing/BuatData';" value="Back" />
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#dataForm").submit(function (event) {
+            event.preventDefault();
+
+            var ID = $("#ID").val();
+            var NAME = $("#NAME").val();
+            var DESCRIPTION = $("#DESCRIPTION").val();
+
+            $.post("/Testing/UpdateCompany",
+                {
+                    ID: ID,
+                    NAME: NAME,
+                    DESCRIPTION: DESCRIPTION
+                },
+                function (data, status) {
+                    console.log("Data: ", data);
+                    alert(data.result.MESSAGE)                    
+                }
+            );
+        });
+    });
+</script>

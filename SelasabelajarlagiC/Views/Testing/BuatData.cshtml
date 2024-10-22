@@ -1,0 +1,162 @@
+﻿@{
+    ViewBag.Title = "Buat Data";
+}
+
+<form id="dataForm">
+    <div>
+        <label for="ID">ID:</label>
+        <input type="text" id="ID" name="ID" />
+    </div>
+
+    <div>
+        <label for="NAME">Name:</label>
+        <input type="text" id="NAME" name="NAME" />
+    </div>
+
+    <div>
+        <label for="DESCRIPTION">Deskripsi:</label>
+        <textarea id="DESCRIPTION" name="DESCRIPTION"></textarea>
+    </div>
+
+    <button id="submit" type="submit">Submit</button>    
+</form>
+<button id="backButton">Back</button>
+<button id="cancelEdit" style="display:none" onclick="cancelEdit()">Cancel Edit</button>
+<a class="btn btn-success" href="downloadExcel">Download Excel</a>
+<a class="btn btn-danger" href="downloadByPdf">Download Pdf</a>
+<br />
+<br />
+<br />
+<br />
+<form id="Carilah" style="flex">
+    <div>
+        <label for="Cari">Cari Nama</label>
+        <input type="text" id="Cari" name="Cari" />
+    </div>
+    <button id="submit" type="submit">Cari</button>
+    <button id="reset" onclick="getData()">Reset</button>
+</form>
+<table id="companyTable" class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+    </tbody>
+</table>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    
+    $(document).ready(function () {
+        $("#Carilah").on("submit", function (event) {
+            event.preventDefault();
+            var NAME = $("#Cari").val();            
+            $.get("/Testing/SearchCompany?NAME=" + NAME, function (data, status) {
+                $("#companyTable tbody").empty();                
+                data.data.forEach(function (item) {
+                    var row = $(
+                        "<tr>" +
+                        "<td>" + item.ID + "</td>" +
+                        "<td>" + item.NAME + "</td>" +
+                        "<td>" + item.DESCRIPTION + "</td>" +
+                        "<td style='white-space:nowrap'>" +
+                        "<a href='#' onclick=\"getDetailEdit('" + item.ID + "')\" class='btn btn-primary btn-sm'>Edit</a>" +
+                        "<a class='btn btn-danger btn-sm' href='/Testing/DeleteCompany?ID=" + item.ID + "' onclick=\"return confirm('Yakin mau hapus?')\">Delete</a>" +
+                        "</td>"
+                    );
+                    row.appendTo('#companyTable tbody');
+                    var x = document.getElementById("reset");
+                    x.style.display = "block";
+                })
+            });
+           
+        });
+
+        $("#dataForm").on("submit",function (event) {
+            event.preventDefault();            
+            var ID = $("#ID").val();
+            var NAME = $("#NAME").val();
+            var DESCRIPTION = $("#DESCRIPTION").val();
+            var y = document.getElementById("updateForm");
+            Mode = 'new'
+            if (y != null) {
+                Mode = 'update'
+            }
+
+            $.post("/Testing/CobaIsidata",
+                {
+                    mode : Mode,
+                    ID: ID,
+                    NAME: NAME,
+                    DESCRIPTION: DESCRIPTION
+                },
+                function (data, status) {                    
+                    alert(data.result.MESSAGE)
+                    getData();
+                }
+            );
+        });      
+    });
+
+    function getData() {        
+            $.get("/Testing/getCompany", function (data, status) {
+                $("#companyTable tbody").empty();
+                data.data.forEach(function (item) {
+                    var row = $(
+                        "<tr>" +
+                        "<td>" + item.ID + "</td>" +
+                        "<td>" + item.NAME + "</td>" +
+                        "<td>" + item.DESCRIPTION + "</td>" +
+                        "<td style='white-space:nowrap'>" +
+                        "<a href='#' onclick=\"getDetailEdit('" + item.ID + "')\" class='btn btn-primary btn-sm'>Edit</a>" +
+                        "<a class='btn btn-danger btn-sm' href='/Testing/DeleteCompany?ID=" + item.ID + "' onclick=\"return confirm('Yakin mau hapus?')\">Delete</a>" +
+                        "</td>"
+                    );
+                    row.appendTo('#companyTable tbody');
+                    var x = document.getElementById("reset");
+                    x.style.display = "none";
+                })
+            });        
+    }
+
+    function cancelEdit() {
+        var x = document.getElementById("cancelEdit");
+        var y = document.getElementById("updateForm");
+        x.style.display = "none";        
+        $('#ID').prop('disabled', false);
+        $('#submit').empty();
+        y.id = "dataForm"
+        $('#submit').append("Submit");
+        $('#ID').prop('value','');
+        $('#NAME').prop('value', '');
+        $('#DESCRIPTION').prop('value', '');
+    }
+
+    function getDetailEdit(id) {
+        $.get('/Testing/getCompany?ID=' + id, function (data, status) {            
+            $('#ID').prop('value', data.data[0].ID);
+            $('#NAME').prop('value', data.data[0].NAME);
+            $('#DESCRIPTION').prop('value', data.data[0].DESCRIPTION);
+            var x = document.getElementById("cancelEdit");
+            var y = document.getElementById("dataForm");
+            x.style.display = "block";
+            $('#ID').prop('disabled', true);
+            $('#submit').empty();
+            if (y != null) {
+                y.id = "updateForm"
+            }
+            $('#submit').append("Update");
+
+        });
+    }
+
+    $(window).on('load',function () {
+        getData()        
+    });
+</script>
